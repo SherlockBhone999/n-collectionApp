@@ -5,7 +5,7 @@ const path = require('path')
 const router = Router()
 
 const { saveItem } = require('./modelController')
-//const {uploadFile, downloadFile, listFile , downloadFile2 } = require('./gdrive')
+const { downloadFile, listFile , downloadFile2 } = require('./gdrive')
 
 
 const storage = multer.diskStorage({
@@ -19,14 +19,38 @@ const storage = multer.diskStorage({
 
 const saveInBackend = multer({storage:storage})
 
-
+//frontend send image to backend and save it
 router.post('/sendimg', saveInBackend.single('img') , (req,res)=>{
   console.log('img sent from frontend and saved as ' + req.file.filename)
   res.json(req.file.filename)
 })
 
-
+//upload the image that is just saved to google drive and also create mongodb model
 router.post('/upload', saveItem )
+
+//send image file from back to front
+router.get('/', (req,res)=>{
+  //const options = { root : path.join(__dirname) };
+  const options = { root : 'imageStation' };
+  res.sendFile('./dice.jpg', options)
+  console.log('send')
+})
+
+router.get('/allgdrivelist', (req,res)=>{
+  listFile().then(filelist => {
+    res.json(filelist)
+  })
+})
+
+router.post('/fetchitem', async (req,res) => {
+  const {name, id} = req.body
+  console.log(req.body)
+  await downloadFile2(id,name).then(()=>{
+    const options = { root : 'imageStation' };
+    res.sendFile(`./2_3.jpg`, options)
+    console.log('sent img ',name)
+  })
+})
 
 module.exports = router
 

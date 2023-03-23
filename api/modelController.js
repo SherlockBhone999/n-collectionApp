@@ -15,15 +15,19 @@ const saveItem = (req, res) => {
     myComment,
     reasonToLike,
     myRating,
-    imgNameInBackend
+    imgNameInBackend,
+    category
   } = req.body
   const nameForgdrive = name
   console.log(req.body)
   
   uploadFile(nameForgdrive,imgNameInBackend ).then(id => {
     const profileImgLink = id
-    ItemModel.create({ profileImgLink, name, enjoyedYear, youtubeLinks, imgLinks, myComment, reasonToLike, myRating })
-    .then((res)=> console.log(res))
+    ItemModel.create({ profileImgLink, name, enjoyedYear, youtubeLinks, imgLinks, myComment, reasonToLike, myRating, category })
+    .then((res)=>{ 
+      console.log('created item in mongoDB as :')
+      console.log(res)
+    })
   })
 }
 

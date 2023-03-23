@@ -78,41 +78,27 @@ async function downloadFile(realFileId){
 }
 
 async function listFile(){
-  // Get credentials and build service
-  // TODO (developer) - Use appropriate auth mechanism for your app
-  
-
- // const {GoogleAuth} = require('google-auth-library');
-  
-  const {google} = require('googleapis');
-
-  const auth = new google.auth.GoogleAuth({
-    keyFile: './googlekey.json',
-    scopes: 'https://www.googleapis.com/auth/drive',
-  });
-  const service = google.drive({version: 'v3', auth});
-
-  const files = []
   try {
-    const res = await service.files.list({
+    const res = await driveService.files.list({
       q: 'mimeType=\'image/jpeg\'',
-      fields: 'nextPageToken, files(id, name)',
+      fields: 'nextPageToken, files(id, name, parents)',
       spaces: 'drive',
     });
-    Array.prototype.push.apply(files, res.files);
-    res.data.files.forEach(function(file) {
-      console.log('Found file:', file.name, file.id);
+    const array = res.data.files
+    //only get files inside the desinated folder
+    const arr = array.filter(item => item.parents.includes(GOOGLE_API_FOLDER_ID))
+    arr.forEach(function(file) {
+      console.log('Found file', file);
     });
-    return res.data.files;
+    return arr;
 
   } catch (err) {
-    // TODO(developer) - Handle error
     throw err;
   }
 }
 
 
-async function downloadFile2(realFileId){
+async function downloadFile2(realFileId,name){
   // Get credentials and build service
   // TODO (developer) - Use appropriate auth mechanism for your app
   
@@ -128,7 +114,7 @@ async function downloadFile2(realFileId){
   const service = google.drive({version: 'v3', auth});
 
   fileId = realFileId;
-  var dest = fs.createWriteStream('./downloaded.jpg')
+  var dest = fs.createWriteStream(`./imageStation/${name}`)
   try {
         service.files.get({
                 fileId: fileId,
@@ -137,15 +123,16 @@ async function downloadFile2(realFileId){
             (err, res) => {
                 res.data
                     .on("end", () => {
-                        console.log("Done");
+                        console.log("Downloaded in backend");
                     })
                     .on("error", err => {
                         console.log("Error", err);
                     })
                .pipe(dest); // i want to sent this file to client who request to "/download"
+               
             }
         )
-    
+  
   } catch (err) {
     // TODO(developer) - Handle error
     throw err;

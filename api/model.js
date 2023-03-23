@@ -3,6 +3,7 @@ const mongoose = require('mongoose')
 const itemSchema = new mongoose.Schema({
   profileImgLink : { type : String , required : true },
   name : { type : String , required : true },
+  category : { type : String, required : true } ,
   enjoyedYear : { type : String , required : false },
   addedDate : { type: Date, default : Date.now },
   youtubeLinks : {type : Array , default : [] },
