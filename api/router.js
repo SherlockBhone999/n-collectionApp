@@ -2,7 +2,7 @@
 const { Router } = require('express')
 const router = Router()
 
-const { saveItem, sendImage, getGdriveList, saveInBackend, deleteItem , getItemFromDB } = require('./modelController')
+const { saveItem, sendImage, getGdriveList, saveInBackend, deleteItem , getItemFromDB , getListFromDB } = require('./modelController')
 
 
 router.get('/allgdrivelist', getGdriveList )
@@ -21,10 +21,14 @@ router.post('/upload', saveItem )
 
 
 //temp comment out to try delete
-router.post('/fetchitemfromgdrive', sendImage )
+router.post('/fetchimgfromgdrive', sendImage )
 
 
 router.post('/fetchitemfromdb', getItemFromDB )
+
+
+router.post('/delete', deleteItem )
+router.post('/fetchlistfromdb', getListFromDB )
 
 module.exports = router
 

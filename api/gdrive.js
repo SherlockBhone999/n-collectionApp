@@ -104,38 +104,17 @@ async function downloadFile2(realFileId,name,res1){
   }
 }
 
-async function downloadFile(realFileId){
-  // Get credentials and build service
-  // TODO (developer) - Use appropriate auth mechanism for your app
-  
-
- // const {GoogleAuth} = require('google-auth-library');
-  
-  const {google} = require('googleapis');
-
-  const auth = new google.auth.GoogleAuth({
-    keyFile: './googlekey.json',
-    scopes: 'https://www.googleapis.com/auth/drive',
-  });
-  const service = google.drive({version: 'v3', auth});
-
-  fileId = realFileId;
-  try {
-    const file = await service.files.get({
-      fileId: fileId,
-      alt: 'media',
-    });
-    console.log(file.status);
-    return file.status;
-  } catch (err) {
-    // TODO(developer) - Handle error
-    throw err;
-  }
+async function deleteFile (realFileId){
+  const fileId = realFileId
+  const file = await driveService.files.delete({
+    fileId : fileId
+  })
+  return file.status
 }
 
 
 // https://drive.google.com/file/d/1uh59uI-5L1Rls3XzcFhOZByyAhCg7mid/view?usp=share_link
 
-module.exports = { uploadFile, downloadFile, listFile , downloadFile2 }
+module.exports = { uploadFile , listFile , downloadFile2, deleteFile }
 
 

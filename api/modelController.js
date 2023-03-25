@@ -3,7 +3,7 @@ const ItemModel = require('./model')
 const path = require('path')
 const multer = require('multer')
 const {uploadFile } = require('./gdrive')
-const { downloadFile, listFile , downloadFile2 } = require('./gdrive')
+const { listFile , downloadFile2, deleteFile  } = require('./gdrive')
 
 
 
@@ -21,7 +21,6 @@ const saveItem = (req, res) => {
     category
   } = req.body
   const nameForgdrive = name
-  console.log(req.body)
   
   uploadFile(nameForgdrive,imgNameInBackend ).then(id => {
     const profileImgLink = id
@@ -43,6 +42,7 @@ const getGdriveList = (req,res)=>{
 
 const sendImage = async (req, res) => {
   const {name, id} = req.body
+  console.log('gonna fetch img using : ', req.body)
   await downloadFile2(id,name,res)
 }
 
@@ -62,21 +62,35 @@ const saveInBackend = multer({storage:storage})
 //findByIdAndDelete(_id)
 
 const deleteItem = (req,res) => {
-  console.log(req.body)
+  const {profileImgLink, _id} = req.body
+  deleteFile(profileImgLink)
 }
 
 const getItemFromDB = (req,res) => {
-  console.log('gonna fetch item from db :', req.body )
   const {gdriveId} = req.body
-  ItemModel.find({profileImgLink : gdriveId})
+  console.log(gdriveId)
+  ItemModel.findOne({profileImgLink : gdriveId})
   .then((data) => {
     res.json(data)
   })
 }
 
+const getListFromDB = (req, res) => {
+  const { category } = req.body
+  console.log(req.body)
+  if(category === ''){
+    ItemModel.find()
+    .then(data =>{
+      res.json(data)
+    })
+  }else{
+    ItemModel.find({category : category})
+    .then( (data) => {
+      res.json(data)
+    })
+  }
+}
 
-module.exports = { saveItem , sendImage, getGdriveList, saveInBackend , deleteItem, getItemFromDB }
 
-/*
-{"_id":{"$oid":"641d5b5fd9d60f99318019d9"},"profileImgLink":"1qCCmVAhe2BJ51463gUolrgzSh8Z1swEB","name":"perfect_half","category":"hentai","enjoyedYear":"2020","youtubeLinks":[],"imgLinks":[],"myComment":"the goat","reasonToLike":"most beautiful art style i have ever seen till now","myRating":{"$numberInt":"10"},"addedDate":{"$date":{"$numberLong":"1679645535379"}},"__v":{"$numberInt":"0"}}
-*/
+module.exports = { saveItem , sendImage, getGdriveList, saveInBackend , deleteItem, getItemFromDB, getListFromDB }
+
