@@ -59,9 +59,11 @@ async function listFile(){
     //only get files inside the desinated folder
     const arr = array.filter(item => item.parents.includes(GOOGLE_API_FOLDER_ID))
     console.log('Found '+ arr.length +' files')
+    /*
     arr.forEach(function(file,index) {
       console.log('Found file ',index+1 ,file);
     });
+    */
     return arr;
 
   } catch (err) {

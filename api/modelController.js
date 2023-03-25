@@ -42,7 +42,6 @@ const getGdriveList = (req,res)=>{
 
 const sendImage = async (req, res) => {
   const {name, id} = req.body
-  console.log('gonna fetch img using : ', req.body)
   await downloadFile2(id,name,res)
 }
 
@@ -64,11 +63,14 @@ const saveInBackend = multer({storage:storage})
 const deleteItem = (req,res) => {
   const {profileImgLink, _id} = req.body
   deleteFile(profileImgLink)
+  ItemModel.findByIdAndDelete(_id)
+  .then(()=>{
+    console.log('deleted')
+  })
 }
 
 const getItemFromDB = (req,res) => {
   const {gdriveId} = req.body
-  console.log(gdriveId)
   ItemModel.findOne({profileImgLink : gdriveId})
   .then((data) => {
     res.json(data)
@@ -77,7 +79,6 @@ const getItemFromDB = (req,res) => {
 
 const getListFromDB = (req, res) => {
   const { category } = req.body
-  console.log(req.body)
   if(category === ''){
     ItemModel.find()
     .then(data =>{
@@ -92,5 +93,47 @@ const getListFromDB = (req, res) => {
 }
 
 
-module.exports = { saveItem , sendImage, getGdriveList, saveInBackend , deleteItem, getItemFromDB, getListFromDB }
 
+
+const updateItem = (req,res) =>{
+  const {
+    _id,
+    profileImgLink,
+    name,
+    category,
+    enjoyedYear,
+    youtubeLinks,
+    imgLinks,
+    myComment,
+    reasonToLike,
+    myRating,
+    addedDate
+  } = req.body
+  
+  ItemModel.findByIdAndUpdate(_id, { profileImgLink, name, category, enjoyedYear, youtubeLinks, imgLinks, myComment, reasonToLike, myRating, addedDate})
+  .then((data)=>{
+    console.log('updated')
+  })
+
+}
+
+
+module.exports = { saveItem , sendImage, getGdriveList, saveInBackend , deleteItem, getItemFromDB, getListFromDB , updateItem }
+
+/*
+_id: '641f28b47fef465881c9f27c',
+  profileImgLink: '1fZk1hNoMXSUANR9hgn5Fp7e0IdE3_p_j',
+  name: 'invincible_from_start',
+  category: 'manhua',
+  enjoyedYear: '',
+  youtubeLinks: [ { videoLink: '' } ],
+  imgLinks: [ { imgLink: '' } ],
+  myComment: '',
+  reasonToLike: '',
+  myRating: 7,
+  addedDate: '2023-03-25T17:00:36.999Z',
+  __v: 0,
+  parents: [ '1tfJZleWaOcBsRa12hVoAxjiCWIwU1Yse' ],
+  id: '1fZk1hNoMXSUANR9hgn5Fp7e0IdE3_p_j',
+  imgNameInBackend: ''
+*/
