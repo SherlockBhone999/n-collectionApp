@@ -1,7 +1,9 @@
 
 const ItemModel = require('./model')
 const path = require('path')
+const multer = require('multer')
 const {uploadFile } = require('./gdrive')
+const { downloadFile, listFile , downloadFile2 } = require('./gdrive')
 
 
 
@@ -32,22 +34,49 @@ const saveItem = (req, res) => {
 }
 
 
+const getGdriveList = (req,res)=>{
+  listFile().then(filelist => {
+    res.json(filelist)
+  })
+}
 
-module.exports = { saveItem }
+
+const sendImage = async (req, res) => {
+  const {name, id} = req.body
+  await downloadFile2(id,name,res)
+}
+
+
+const storage = multer.diskStorage({
+  destination : (req,file,cb)=>{
+    cb(null, 'imageStation')
+  },
+  filename: (req,file,cb) => {
+    cb(null, file.originalname)
+  }  
+})
+const saveInBackend = multer({storage:storage})
+
+
+//findByIdAndUpdate(_id, {})
+//findByIdAndDelete(_id)
+
+const deleteItem = (req,res) => {
+  console.log(req.body)
+}
+
+const getItemFromDB = (req,res) => {
+  console.log('gonna fetch item from db :', req.body )
+  const {gdriveId} = req.body
+  ItemModel.find({profileImgLink : gdriveId})
+  .then((data) => {
+    res.json(data)
+  })
+}
+
+
+module.exports = { saveItem , sendImage, getGdriveList, saveInBackend , deleteItem, getItemFromDB }
 
 /*
-const getItemlist = async (req, res) =>{
-  const list = await ItemModel.find({},{"_id":1})
-  res.json(list)
-  console.log('getlist'+list)
-}
-
-const getItem = async (req, res ) =>{
-  const {id} = req.params
-  const item = await ItemModel.findOne({ "_id": id } )
-  const options = { root : path.join(__dirname) }
-
-  res.sendFile(`./fakeImages/${item.profileImgLink}`, options)
-  console.log('sent img '+ id)
-}
+{"_id":{"$oid":"641d5b5fd9d60f99318019d9"},"profileImgLink":"1qCCmVAhe2BJ51463gUolrgzSh8Z1swEB","name":"perfect_half","category":"hentai","enjoyedYear":"2020","youtubeLinks":[],"imgLinks":[],"myComment":"the goat","reasonToLike":"most beautiful art style i have ever seen till now","myRating":{"$numberInt":"10"},"addedDate":{"$date":{"$numberLong":"1679645535379"}},"__v":{"$numberInt":"0"}}
 */
