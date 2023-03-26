@@ -1,6 +1,7 @@
 const fs = require('fs')
 const { google } = require('googleapis')
 
+
 const GOOGLE_API_FOLDER_ID = '1tfJZleWaOcBsRa12hVoAxjiCWIwU1Yse'
 
 const auth = new google.auth.GoogleAuth({
@@ -77,6 +78,22 @@ const sendImageToClient = (res,name) => {
   console.log('sent img ',name )
 }
 
+
+const clearImageStation = () => {
+  fs.readdir('imageStation', function (err, files) {
+      if (err) {
+          return console.log('Unable to scan directory: ' + err);
+      } 
+      //listing all files using forEach
+      files.forEach(function (file) {
+        fs.unlink(`imageStation/${file}` , (err)=>{
+        console.log('deleted', file)
+        })
+      });
+  });
+}
+
+
 async function downloadFile2(realFileId,name,res1){
 
   fileId = realFileId;
@@ -93,6 +110,9 @@ async function downloadFile2(realFileId,name,res1){
                         setTimeout(()=>{
                           sendImageToClient(res1,name)
                         }, 500 )
+                        setTimeout(()=>{
+                          clearImageStation()
+                        },5000)
                     })
                     .on("error", err => {
                         console.log("Error", err);

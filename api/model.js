@@ -14,5 +14,12 @@ const itemSchema = new mongoose.Schema({
 })
 
 
-module.exports = mongoose.model('Item', itemSchema)
+
+const categorySchema = new mongoose.Schema({
+  category: { type : String, required : true}
+})
+
+const ItemModel = mongoose.model('Item', itemSchema)
+const CategoryModel = mongoose.model('Categories', categorySchema)
+module.exports = {ItemModel, CategoryModel}
 

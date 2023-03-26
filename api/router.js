@@ -2,7 +2,7 @@
 const { Router } = require('express')
 const router = Router()
 
-const { saveItem, sendImage, getGdriveList, saveInBackend, deleteItem , getItemFromDB , getListFromDB , updateItem } = require('./modelController')
+const { saveItem, sendImage, getGdriveList, saveInBackend, deleteItem , getItemFromDB , getListFromDB , updateItem, loginTest, createCategoryModel, getCategoryList } = require('./modelController')
 
 
 router.get('/allgdrivelist', getGdriveList )
@@ -30,6 +30,11 @@ router.post('/fetchitemfromdb', getItemFromDB )
 router.post('/delete', deleteItem )
 router.post('/fetchlistfromdb', getListFromDB )
 router.post('/update', updateItem )
+
+router.post('/login', loginTest )
+
+router.post('/createcategory', createCategoryModel )
+router.get('/getcategorylist', getCategoryList )
 
 module.exports = router
 

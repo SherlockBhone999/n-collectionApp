@@ -1,9 +1,11 @@
 
-const ItemModel = require('./model')
+const {ItemModel, CategoryModel} = require('./model')
 const path = require('path')
 const multer = require('multer')
 const {uploadFile } = require('./gdrive')
 const { listFile , downloadFile2, deleteFile  } = require('./gdrive')
+require('dotenv').config()
+const fs = require('fs')
 
 
 
@@ -28,7 +30,13 @@ const saveItem = (req, res) => {
     .then((res)=>{ 
       console.log('created item in mongoDB as :')
       console.log(res)
+      
+      setTimeout(()=>{
+        clearImageStation()
+      },5000)
+      
     })
+    
   })
 }
 
@@ -56,9 +64,6 @@ const storage = multer.diskStorage({
 })
 const saveInBackend = multer({storage:storage})
 
-
-//findByIdAndUpdate(_id, {})
-//findByIdAndDelete(_id)
 
 const deleteItem = (req,res) => {
   const {profileImgLink, _id} = req.body
@@ -118,22 +123,46 @@ const updateItem = (req,res) =>{
 }
 
 
-module.exports = { saveItem , sendImage, getGdriveList, saveInBackend , deleteItem, getItemFromDB, getListFromDB , updateItem }
+const clearImageStation = () => {
+  fs.readdir('imageStation', function (err, files) {
+      if (err) {
+          return console.log('Unable to scan directory: ' + err);
+      } 
+      //listing all files using forEach
+      files.forEach(function (file) {
+        fs.unlink(`imageStation/${file}` , (err)=>{
+        console.log('deleted', file)
+        })
+      });
+  });
+}
 
-/*
-_id: '641f28b47fef465881c9f27c',
-  profileImgLink: '1fZk1hNoMXSUANR9hgn5Fp7e0IdE3_p_j',
-  name: 'invincible_from_start',
-  category: 'manhua',
-  enjoyedYear: '',
-  youtubeLinks: [ { videoLink: '' } ],
-  imgLinks: [ { imgLink: '' } ],
-  myComment: '',
-  reasonToLike: '',
-  myRating: 7,
-  addedDate: '2023-03-25T17:00:36.999Z',
-  __v: 0,
-  parents: [ '1tfJZleWaOcBsRa12hVoAxjiCWIwU1Yse' ],
-  id: '1fZk1hNoMXSUANR9hgn5Fp7e0IdE3_p_j',
-  imgNameInBackend: ''
-*/
+const loginTest = (req, res) => {
+  const {password} = req.body
+  console.log(req.body)
+  
+  if(password===process.env.PASSWORD){
+    res.json('yes')
+  }else{
+    res.json('no')
+  }
+}
+
+const createCategoryModel = (req,res) =>{
+  const {category} = req.body
+  CategoryModel.create({category})
+  .then(res =>{
+    console.log('category created')
+    console.log(res)
+  })
+}
+
+const getCategoryList = (req, res) => {
+  CategoryModel.find()
+  .then(data => {
+    res.json(data)
+  })
+}
+
+
+module.exports = { saveItem , sendImage, getGdriveList, saveInBackend , deleteItem, getItemFromDB, getListFromDB , updateItem , loginTest, createCategoryModel , getCategoryList }
