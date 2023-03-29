@@ -74,7 +74,7 @@ const deleteItem = (req,res) => {
   })
 }
 
-const getItemFromDB = (req,res) => {
+const getItemFromDBWithGdriveId = (req,res) => {
   const {gdriveId} = req.body
   ItemModel.findOne({profileImgLink : gdriveId})
   .then((data) => {
@@ -164,5 +164,32 @@ const getCategoryList = (req, res) => {
   })
 }
 
+const deleteCategoryModel = (req,res) => {
+  const {_id} = req.body
+  CategoryModel.findByIdAndDelete(_id)
+  .then((data)=>{
+    console.log('deleted', data)
+  })
+}
 
-module.exports = { saveItem , sendImage, getGdriveList, saveInBackend , deleteItem, getItemFromDB, getListFromDB , updateItem , loginTest, createCategoryModel , getCategoryList }
+const updateCategoryModel = (req,res) => {
+  const {_id,category} = req.body
+  CategoryModel.findByIdAndUpdate(_id,{category})
+  .then(data=>{
+    console.log('updated', data)
+  })
+}
+
+
+const getItemFromDBWithId = (req, res) => {
+  const {_id} = req.body
+  ItemModel.findOne({_id : _id})
+  .then(data => {
+    res.json(data)
+  })
+}
+
+module.exports = { saveItem , sendImage, getGdriveList, saveInBackend , deleteItem, getItemFromDBWithGdriveId, getListFromDB , updateItem , loginTest, createCategoryModel , getCategoryList, deleteCategoryModel, updateCategoryModel , getItemFromDBWithId}
+
+
+//getItemFromDBWithId
