@@ -59,7 +59,7 @@ async function listFile(){
     const array = res.data.files
     //only get files inside the desinated folder
     const arr = array.filter(item => item.parents.includes(GOOGLE_API_FOLDER_ID))
-    console.log('Found '+ arr.length +' files')
+    console.log('Found '+ arr.length +' files in gdrive')
     /*
     arr.forEach(function(file,index) {
       console.log('Found file ',index+1 ,file);
@@ -74,30 +74,15 @@ async function listFile(){
 
 const sendImageToClient = (res,name) => {
   const options = { root : 'imageStation' };
-  res.sendFile(`./${name}`, options)
-  console.log('sent img ',name )
+  res.sendFile(`./${name}.jpg`, options)
 }
 
-
-const clearImageStation = () => {
-  fs.readdir('imageStation', function (err, files) {
-      if (err) {
-          return console.log('Unable to scan directory: ' + err);
-      } 
-      //listing all files using forEach
-      files.forEach(function (file) {
-        fs.unlink(`imageStation/${file}` , (err)=>{
-        console.log('deleted', file)
-        })
-      });
-  });
-}
 
 
 async function downloadFile2(realFileId,name,res1){
 
   fileId = realFileId;
-  var dest = fs.createWriteStream(`./imageStation/${name}`)
+  var dest = fs.createWriteStream(`./imageStation/${name}.jpg`)
   try {
         driveService.files.get({
                 fileId: fileId,
@@ -110,9 +95,6 @@ async function downloadFile2(realFileId,name,res1){
                         setTimeout(()=>{
                           sendImageToClient(res1,name)
                         }, 500 )
-                        setTimeout(()=>{
-                          clearImageStation()
-                        },5000)
                     })
                     .on("error", err => {
                         console.log("Error", err);

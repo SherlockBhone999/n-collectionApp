@@ -2,14 +2,14 @@
 const {ItemModel, CategoryModel} = require('./model')
 const path = require('path')
 const multer = require('multer')
-const {uploadFile } = require('./gdrive')
-const { listFile , downloadFile2, deleteFile  } = require('./gdrive')
+//const {uploadFile } = require('./gdrive')
+const { listFile , downloadFile2, deleteFile , uploadFile } = require('./gdrive')
 require('dotenv').config()
 const fs = require('fs')
 
 
 
-const saveItem = (req, res) => {
+const uploadImageAndCreateItem = async (req, res) => {
   const {
     profileImg,
     name,
@@ -20,38 +20,45 @@ const saveItem = (req, res) => {
     reasonToLike,
     myRating,
     imgNameInBackend,
-    category
+    category,
+    previousImgName
   } = req.body
-  const nameForgdrive = name
   
+  const categoryList = await CategoryModel.find()
+  const categoryArray = []
+  categoryList.map(item =>{
+    categoryArray.push(item.category)
+  })
+  
+  if(!categoryArray.includes(category)){
+    CategoryModel.create({category})
+    .then((data)=>{
+      console.log('category created', data)
+    })
+  }
+  
+  
+  const nameForgdrive = name
   uploadFile(nameForgdrive,imgNameInBackend ).then(id => {
     const profileImgLink = id
     ItemModel.create({ profileImgLink, name, enjoyedYear, youtubeLinks, imgLinks, myComment, reasonToLike, myRating, category })
     .then((res)=>{ 
       console.log('created item in mongoDB as :')
       console.log(res)
-      
       setTimeout(()=>{
-        clearImageStation()
+        deleteImageInImageStation(imgNameInBackend)
       },5000)
-      
+      setTimeout(()=>{
+        if(previousImgName){
+          const name = `${previousImgName}.jpg`
+          deleteImageInImageStation(name)
+        }
+      },3000)
     })
     
   })
 }
 
-
-const getGdriveList = (req,res)=>{
-  listFile().then(filelist => {
-    res.json(filelist)
-  })
-}
-
-
-const sendImage = async (req, res) => {
-  const {name, id} = req.body
-  await downloadFile2(id,name,res)
-}
 
 
 const storage = multer.diskStorage({
@@ -70,17 +77,10 @@ const deleteItem = (req,res) => {
   deleteFile(profileImgLink)
   ItemModel.findByIdAndDelete(_id)
   .then(()=>{
-    console.log('deleted')
+    console.log('deleted item in db :' + _id )
   })
 }
 
-const getItemFromDBWithGdriveId = (req,res) => {
-  const {gdriveId} = req.body
-  ItemModel.findOne({profileImgLink : gdriveId})
-  .then((data) => {
-    res.json(data)
-  })
-}
 
 const getListFromDB = (req, res) => {
   const { category } = req.body
@@ -100,7 +100,7 @@ const getListFromDB = (req, res) => {
 
 
 
-const updateItem = (req,res) =>{
+const updateItem = async (req,res) =>{
   const {
     _id,
     profileImgLink,
@@ -115,6 +115,19 @@ const updateItem = (req,res) =>{
     addedDate
   } = req.body
   
+  const categoryList = await CategoryModel.find()
+  const categoryArray = []
+  categoryList.map(item =>{
+    categoryArray.push(item.category)
+  })
+  
+  if(!categoryArray.includes(category)){
+    CategoryModel.create({category})
+    .then((data)=>{
+      console.log('category created', data)
+    })
+  }
+
   ItemModel.findByIdAndUpdate(_id, { profileImgLink, name, category, enjoyedYear, youtubeLinks, imgLinks, myComment, reasonToLike, myRating, addedDate})
   .then((data)=>{
     console.log('updated')
@@ -123,18 +136,10 @@ const updateItem = (req,res) =>{
 }
 
 
-const clearImageStation = () => {
-  fs.readdir('imageStation', function (err, files) {
-      if (err) {
-          return console.log('Unable to scan directory: ' + err);
-      } 
-      //listing all files using forEach
-      files.forEach(function (file) {
-        fs.unlink(`imageStation/${file}` , (err)=>{
-        console.log('deleted', file)
-        })
-      });
-  });
+const deleteImageInImageStation = (name) => {
+    fs.unlink(`imageStation/${name}` , (err)=>{
+    console.log('deleted img in imageStation :', name)
+    })
 }
 
 const loginTest = (req, res) => {
@@ -148,7 +153,7 @@ const loginTest = (req, res) => {
   }
 }
 
-const createCategoryModel = (req,res) =>{
+const createCategory = (req,res) =>{
   const {category} = req.body
   CategoryModel.create({category})
   .then(res =>{
@@ -164,23 +169,23 @@ const getCategoryList = (req, res) => {
   })
 }
 
-const deleteCategoryModel = (req,res) => {
+const deleteCategory = (req,res) => {
   const {_id} = req.body
   CategoryModel.findByIdAndDelete(_id)
   .then((data)=>{
-    console.log('deleted', data)
+    console.log('deleted category ', data)
   })
 }
 
-const updateCategoryModel = (req,res) => {
+const updateCategory = (req,res) => {
   const {_id,category} = req.body
   CategoryModel.findByIdAndUpdate(_id,{category})
   .then(data=>{
-    console.log('updated', data)
+    console.log('updated category', data)
   })
 }
 
-
+/*
 const getItemFromDBWithId = (req, res) => {
   const {_id} = req.body
   ItemModel.findOne({_id : _id})
@@ -188,8 +193,33 @@ const getItemFromDBWithId = (req, res) => {
     res.json(data)
   })
 }
+*/
 
-module.exports = { saveItem , sendImage, getGdriveList, saveInBackend , deleteItem, getItemFromDBWithGdriveId, getListFromDB , updateItem , loginTest, createCategoryModel , getCategoryList, deleteCategoryModel, updateCategoryModel , getItemFromDBWithId}
+const sendImageFromBackendOrGdrive = (req,res) =>{
+  const {name, id} = req.body
+  fs.readdir('imageStation', function (err, files) {
+      if (err) {
+          return console.log('Unable to scan directory: ' + err);
+      }
+      if(files.includes(`${name}.jpg`)){
+        sendImageToClient(res,name)
+      }else{
+        fetchImageFromGdriveAndSendIt(name,id,res)
+      }
+      });
+  
+}
 
 
-//getItemFromDBWithId
+
+
+const sendImageToClient = (res,name) => {
+  const options = { root : 'imageStation' };
+  res.sendFile(`./${name}.jpg`, options)
+}
+
+const fetchImageFromGdriveAndSendIt = async (name, id,res) => {
+  await downloadFile2(id,name,res)
+}
+
+module.exports = { uploadImageAndCreateItem , saveInBackend , deleteItem, getListFromDB , updateItem , loginTest, createCategory , getCategoryList, deleteCategory , updateCategory , sendImageFromBackendOrGdrive }
