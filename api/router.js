@@ -2,7 +2,7 @@
 const { Router } = require('express')
 const router = Router()
 
-const { uploadImageAndCreateItem , saveInBackend, deleteItem , getListFromDB , updateItem, loginTest, createCategory , getCategoryList , deleteCategory , updateCategory , sendImageFromBackendOrGdrive } = require('./modelController')
+const { uploadImageAndCreateItem , saveInBackend, deleteItem , getLimitedItemListFromDB , updateItem, loginTest, createCategory , getCategoryList , deleteCategory , updateCategory , sendImageFromBackendOrGdrive, getAllItemListFromDB, getAllItemDataFromDB, getItemFromDBWithId } = require('./modelController')
 
 
 
@@ -17,7 +17,7 @@ router.post('/saveimg', saveInBackend.single('img') , (req,res)=>{
 router.post('/upload', uploadImageAndCreateItem )
 
 router.post('/delete', deleteItem )
-router.post('/fetchlistfromdb', getListFromDB )
+router.post('/fetchlimiteditemlistfromdb', getLimitedItemListFromDB )
 router.post('/update', updateItem )
 
 router.post('/login', loginTest )
@@ -28,7 +28,9 @@ router.post('/deletecategory', deleteCategory )
 router.post('/updatecategory', updateCategory )
 
 router.post('/fetchimgfrombackend', sendImageFromBackendOrGdrive )
-
+router.post('/fetchallitemlistfromdb', getAllItemListFromDB )
+router.get('/fetchallitemdatafromdb', getAllItemDataFromDB )
+router.post('/fetchitemfromdbwithid', getItemFromDBWithId )
 
 module.exports = router
 

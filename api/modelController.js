@@ -82,15 +82,16 @@ const deleteItem = (req,res) => {
 }
 
 
-const getListFromDB = (req, res) => {
-  const { category } = req.body
-  if(category === ''){
-    ItemModel.find()
+const getLimitedItemListFromDB = (req, res) => {
+  const { category, pageNumber } = req.body
+  const skipp = (pageNumber-1) * 12
+  if(category === 'all'){
+    ItemModel.find().skip(skipp).limit(12)
     .then(data =>{
       res.json(data)
     })
   }else{
-    ItemModel.find({category : category})
+    ItemModel.find({category : category}).skip(skipp).limit(12)
     .then( (data) => {
       res.json(data)
     })
@@ -144,8 +145,6 @@ const deleteImageInImageStation = (name) => {
 
 const loginTest = (req, res) => {
   const {password} = req.body
-  console.log(req.body)
-  
   if(password===process.env.PASSWORD){
     res.json('yes')
   }else{
@@ -185,7 +184,7 @@ const updateCategory = (req,res) => {
   })
 }
 
-/*
+
 const getItemFromDBWithId = (req, res) => {
   const {_id} = req.body
   ItemModel.findOne({_id : _id})
@@ -193,7 +192,7 @@ const getItemFromDBWithId = (req, res) => {
     res.json(data)
   })
 }
-*/
+
 
 const sendImageFromBackendOrGdrive = (req,res) =>{
   const {name, id} = req.body
@@ -222,4 +221,28 @@ const fetchImageFromGdriveAndSendIt = async (name, id,res) => {
   await downloadFile2(id,name,res)
 }
 
-module.exports = { uploadImageAndCreateItem , saveInBackend , deleteItem, getListFromDB , updateItem , loginTest, createCategory , getCategoryList, deleteCategory , updateCategory , sendImageFromBackendOrGdrive }
+
+const getAllItemListFromDB = (req, res) => {
+    const {category} = req.body
+    if(category === 'all'){
+      ItemModel.find({}, {name : 1, _id : 0})
+      .then(data =>{
+        res.json(data)
+      })
+    }else{
+      ItemModel.find({category:category},{name:1, _id : 0})
+      .then(data =>{
+        res.json(data)
+      })
+    }
+}
+
+const getAllItemDataFromDB = (req, res) => {
+  ItemModel.find()
+  .then(data =>{
+    res.json(data)
+  })
+}
+
+
+module.exports = { uploadImageAndCreateItem , saveInBackend , deleteItem, getLimitedItemListFromDB , updateItem , loginTest, createCategory , getCategoryList, deleteCategory , updateCategory , sendImageFromBackendOrGdrive , getAllItemListFromDB, getAllItemDataFromDB, getItemFromDBWithId }
